@@ -1,0 +1,686 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Pancake's Habit Tracker</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=DM+Sans:wght@300;400;500&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.19.0/dist/tabler-icons.min.css">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+/* ══════════════════════════════════════════
+   SPLASH SCREEN
+══════════════════════════════════════════ */
+
+#splash {
+  position: fixed; inset: 0; z-index: 1000;
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  overflow: hidden;
+  background: #020d12;
+}
+
+/* Stars layer */
+#splash::before {
+  content: '';
+  position: absolute; inset: 0;
+  background-image:
+    radial-gradient(1px 1px at 10% 15%, rgba(255,255,255,0.7) 0%, transparent 100%),
+    radial-gradient(1px 1px at 25% 8%,  rgba(255,255,255,0.5) 0%, transparent 100%),
+    radial-gradient(1px 1px at 40% 20%, rgba(255,255,255,0.6) 0%, transparent 100%),
+    radial-gradient(1px 1px at 55% 5%,  rgba(255,255,255,0.4) 0%, transparent 100%),
+    radial-gradient(1px 1px at 70% 12%, rgba(255,255,255,0.7) 0%, transparent 100%),
+    radial-gradient(1px 1px at 85% 18%, rgba(255,255,255,0.5) 0%, transparent 100%),
+    radial-gradient(1px 1px at 92% 7%,  rgba(255,255,255,0.6) 0%, transparent 100%),
+    radial-gradient(1.5px 1.5px at 15% 35%, rgba(255,255,255,0.4) 0%, transparent 100%),
+    radial-gradient(1px 1px at 33% 42%, rgba(255,255,255,0.3) 0%, transparent 100%),
+    radial-gradient(1px 1px at 60% 38%, rgba(255,255,255,0.5) 0%, transparent 100%),
+    radial-gradient(1px 1px at 78% 30%, rgba(255,255,255,0.4) 0%, transparent 100%),
+    radial-gradient(1px 1px at 5%  50%, rgba(255,255,255,0.3) 0%, transparent 100%),
+    radial-gradient(1.5px 1.5px at 48% 55%, rgba(255,255,255,0.5) 0%, transparent 100%),
+    radial-gradient(1px 1px at 88% 48%, rgba(255,255,255,0.3) 0%, transparent 100%);
+  pointer-events: none;
+}
+
+/* Aurora canvas sits behind text */
+#aurora-canvas {
+  position: absolute; inset: 0; width: 100%; height: 100%;
+}
+
+/* Ground silhouette */
+.ground {
+  position: absolute; bottom: 0; left: 0; right: 0; height: 18%;
+  background: linear-gradient(to top, #000d08 60%, transparent 100%);
+  z-index: 2;
+}
+.ground::before {
+  content: '';
+  position: absolute; top: -40px; left: 0; right: 0; height: 60px;
+  background:
+    radial-gradient(ellipse 120px 50px at 8% 100%, #010d08 49%, transparent 50%),
+    radial-gradient(ellipse 90px 45px at 16% 100%, #010d08 49%, transparent 50%),
+    radial-gradient(ellipse 150px 60px at 28% 100%, #010d08 49%, transparent 50%),
+    radial-gradient(ellipse 80px 40px at 38% 100%, #010d08 49%, transparent 50%),
+    radial-gradient(ellipse 200px 70px at 52% 100%, #010d08 49%, transparent 50%),
+    radial-gradient(ellipse 100px 50px at 64% 100%, #010d08 49%, transparent 50%),
+    radial-gradient(ellipse 160px 65px at 76% 100%, #010d08 49%, transparent 50%),
+    radial-gradient(ellipse 110px 48px at 88% 100%, #010d08 49%, transparent 50%),
+    radial-gradient(ellipse 130px 55px at 98% 100%, #010d08 49%, transparent 50%);
+}
+
+/* Splash content */
+.splash-content {
+  position: relative; z-index: 3;
+  text-align: center;
+  padding: 0 2rem;
+  animation: fadeUp 1.2s ease both;
+}
+
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(24px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.splash-title {
+  font-family: 'Playfair Display', serif;
+  font-weight: 900;
+  font-size: clamp(3rem, 10vw, 6rem);
+  line-height: 1.05;
+  letter-spacing: -0.02em;
+  /* Aurora shimmer gradient on text */
+  background: linear-gradient(
+    135deg,
+    #a8ffda 0%,
+    #68e8c4 15%,
+    #5ce0ff 30%,
+    #a78bfa 50%,
+    #67e8f9 65%,
+    #6ee7b7 80%,
+    #a8ffda 100%
+  );
+  background-size: 300% 300%;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  animation: shimmer 5s ease infinite;
+  text-shadow: none;
+  filter: drop-shadow(0 0 30px rgba(100,230,180,0.35));
+}
+
+@keyframes shimmer {
+  0%   { background-position: 0% 50%; }
+  50%  { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+.splash-sub {
+  margin-top: 1.5rem;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 13px;
+  letter-spacing: 0.25em;
+  text-transform: uppercase;
+  color: rgba(160,240,200,0.55);
+  animation: fadeUp 1.2s 0.3s ease both;
+}
+
+.track-btn {
+  margin-top: 2.5rem;
+  display: inline-flex; align-items: center; gap: 10px;
+  padding: 16px 40px;
+  background: transparent;
+  border: 1.5px solid rgba(100,230,180,0.6);
+  border-radius: 60px;
+  color: #a8ffda;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 16px;
+  font-weight: 500;
+  letter-spacing: 0.08em;
+  cursor: pointer;
+  transition: background 0.3s, border-color 0.3s, color 0.3s, transform 0.15s, box-shadow 0.3s;
+  animation: fadeUp 1.2s 0.55s ease both;
+  position: relative;
+  overflow: hidden;
+}
+.track-btn::before {
+  content: '';
+  position: absolute; inset: 0;
+  background: linear-gradient(135deg, rgba(100,230,180,0.15), rgba(100,200,255,0.15));
+  opacity: 0; transition: opacity 0.3s;
+  border-radius: 60px;
+}
+.track-btn:hover { border-color: rgba(100,230,180,0.9); box-shadow: 0 0 30px rgba(100,230,180,0.25); transform: translateY(-1px); }
+.track-btn:hover::before { opacity: 1; }
+.track-btn:active { transform: scale(0.97); }
+
+/* Splash exit */
+#splash.exit {
+  animation: splashExit 0.8s ease forwards;
+}
+@keyframes splashExit {
+  from { opacity: 1; transform: scale(1); }
+  to   { opacity: 0; transform: scale(1.03); pointer-events: none; }
+}
+
+/* ══════════════════════════════════════════
+   MAIN APP
+══════════════════════════════════════════ */
+
+:root {
+  --green:       #1D9E75;
+  --green-dark:  #0F6E56;
+  --green-light: #E1F5EE;
+  --bg:          #F7F5F0;
+  --surface:     #FFFFFF;
+  --surface2:    #F0EDE8;
+  --border:      rgba(0,0,0,0.08);
+  --border2:     rgba(0,0,0,0.15);
+  --text:        #1A1A16;
+  --text2:       #6B6860;
+  --text3:       #A8A49E;
+  --radius:      12px;
+  --radius-sm:   8px;
+  --shadow:      0 1px 3px rgba(0,0,0,0.06), 0 4px 16px rgba(0,0,0,0.04);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg:         #141412;
+    --surface:    #1E1E1B;
+    --surface2:   #272724;
+    --border:     rgba(255,255,255,0.07);
+    --border2:    rgba(255,255,255,0.14);
+    --text:       #F0EDE8;
+    --text2:      #8A8880;
+    --text3:      #55534E;
+    --green-light: #0a2e22;
+    --shadow:     0 1px 3px rgba(0,0,0,0.3), 0 4px 16px rgba(0,0,0,0.2);
+  }
+}
+
+body {
+  font-family: 'DM Sans', sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+}
+
+#main-app {
+  display: none;
+  padding: 2rem 1rem 4rem;
+  animation: appIn 0.6s ease both;
+}
+#main-app.visible { display: block; }
+
+@keyframes appIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.app { max-width: 680px; margin: 0 auto; }
+
+.header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem; }
+.brand { display: flex; align-items: center; gap: 10px; }
+.brand-icon { width: 38px; height: 38px; background: var(--green); border-radius: 10px; display: flex; align-items: center; justify-content: center; color: #fff; font-size: 18px; }
+.brand-name { font-size: 20px; font-weight: 500; letter-spacing: -0.3px; }
+.brand-date { font-size: 12px; color: var(--text3); margin-top: 1px; font-family: 'DM Mono', monospace; }
+
+.add-btn { display: flex; align-items: center; gap: 6px; padding: 9px 16px; background: var(--green); color: #fff; border: none; border-radius: var(--radius-sm); font-family: 'DM Sans', sans-serif; font-size: 14px; font-weight: 500; cursor: pointer; transition: background 0.15s, transform 0.1s; }
+.add-btn:hover { background: var(--green-dark); }
+.add-btn:active { transform: scale(0.97); }
+
+.stats-bar { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 1.5rem; }
+.stat { background: var(--surface); border: 0.5px solid var(--border); border-radius: var(--radius); padding: 14px 16px; box-shadow: var(--shadow); }
+.stat-val { font-size: 26px; font-weight: 500; color: var(--text); font-family: 'DM Mono', monospace; }
+.stat-label { font-size: 11px; color: var(--text3); margin-top: 2px; text-transform: uppercase; letter-spacing: 0.06em; }
+
+.week-nav { display: flex; align-items: center; gap: 8px; margin-bottom: 1rem; }
+.week-label { flex: 1; text-align: center; font-size: 13px; color: var(--text2); font-family: 'DM Mono', monospace; }
+.nav-btn { background: var(--surface); border: 0.5px solid var(--border2); border-radius: var(--radius-sm); padding: 6px 12px; cursor: pointer; color: var(--text2); font-size: 14px; transition: background 0.12s; }
+.nav-btn:hover { background: var(--surface2); }
+.nav-btn:disabled { opacity: 0.3; cursor: default; }
+
+.tracker { background: var(--surface); border: 0.5px solid var(--border); border-radius: var(--radius); box-shadow: var(--shadow); overflow: hidden; }
+
+.day-headers { display: grid; grid-template-columns: 1fr repeat(7, 44px); gap: 4px; padding: 10px 14px; border-bottom: 0.5px solid var(--border); background: var(--surface2); }
+.dh { font-size: 11px; color: var(--text3); text-align: center; font-weight: 500; text-transform: uppercase; letter-spacing: 0.05em; line-height: 1.3; }
+.dh.today { color: var(--green); }
+.dh .dnum { font-size: 14px; font-weight: 500; font-family: 'DM Mono', monospace; display: block; }
+
+.habit-row { display: grid; grid-template-columns: 1fr repeat(7, 44px); gap: 4px; align-items: center; padding: 8px 14px; border-bottom: 0.5px solid var(--border); transition: background 0.1s; }
+.habit-row:last-child { border-bottom: none; }
+.habit-row:hover { background: var(--surface2); }
+
+.habit-meta { display: flex; align-items: center; gap: 10px; min-width: 0; }
+.habit-emoji { font-size: 18px; flex-shrink: 0; }
+.habit-info { min-width: 0; }
+.habit-name { font-size: 14px; font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.habit-streak { font-size: 11px; color: var(--text3); margin-top: 1px; }
+
+.habit-actions { display: flex; gap: 2px; margin-left: auto; opacity: 0; transition: opacity 0.15s; flex-shrink: 0; }
+.habit-row:hover .habit-actions { opacity: 1; }
+.icon-btn { background: none; border: none; cursor: pointer; color: var(--text3); padding: 4px 5px; border-radius: 5px; font-size: 15px; transition: color 0.12s, background 0.12s; display: flex; align-items: center; }
+.icon-btn:hover { color: var(--text); background: var(--border); }
+.icon-btn.del:hover { color: #e24b4a; }
+
+.cell { width: 36px; height: 36px; margin: 0 auto; border-radius: 9px; border: 1.5px solid var(--border2); cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 16px; transition: all 0.15s; background: transparent; color: transparent; user-select: none; }
+.cell:hover { border-color: var(--green); background: var(--green-light); }
+.cell.done { background: var(--green); border-color: var(--green); color: #fff; }
+.cell.future { opacity: 0.25; cursor: default; pointer-events: none; }
+.cell.today-col { border-color: var(--green); }
+
+.progress-wrap { padding: 10px 14px; border-top: 0.5px solid var(--border); background: var(--surface2); display: flex; align-items: center; gap: 10px; }
+.progress-bar { flex: 1; height: 5px; background: var(--border2); border-radius: 99px; overflow: hidden; }
+.progress-fill { height: 100%; background: var(--green); border-radius: 99px; transition: width 0.3s ease; }
+.progress-label { font-size: 12px; color: var(--text3); font-family: 'DM Mono', monospace; min-width: 36px; text-align: right; }
+
+.empty { text-align: center; padding: 3rem 1rem; color: var(--text3); font-size: 14px; }
+.empty i { font-size: 36px; display: block; margin-bottom: 10px; }
+
+.overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.4); display: flex; align-items: center; justify-content: center; z-index: 100; padding: 1rem; backdrop-filter: blur(2px); }
+.modal { background: var(--surface); border: 0.5px solid var(--border2); border-radius: var(--radius); padding: 1.5rem; width: 100%; max-width: 320px; box-shadow: 0 8px 40px rgba(0,0,0,0.18); animation: pop 0.18s ease; }
+@keyframes pop { from { transform: scale(0.95); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+
+.modal-title { font-size: 17px; font-weight: 500; margin-bottom: 1.1rem; }
+.modal label { font-size: 12px; color: var(--text2); display: block; margin-bottom: 4px; margin-top: 12px; text-transform: uppercase; letter-spacing: 0.05em; }
+.modal input[type=text] { width: 100%; padding: 9px 12px; background: var(--surface2); border: 0.5px solid var(--border2); border-radius: var(--radius-sm); font-family: 'DM Sans', sans-serif; font-size: 14px; color: var(--text); outline: none; transition: border-color 0.15s; }
+.modal input[type=text]:focus { border-color: var(--green); }
+
+.emoji-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; margin-top: 4px; }
+.emoji-opt { height: 36px; display: flex; align-items: center; justify-content: center; font-size: 19px; border-radius: var(--radius-sm); cursor: pointer; border: 1.5px solid transparent; transition: background 0.1s, border-color 0.1s; }
+.emoji-opt:hover { background: var(--surface2); }
+.emoji-opt.sel { border-color: var(--green); background: var(--green-light); }
+
+.modal-actions { display: flex; gap: 8px; margin-top: 1.2rem; }
+.btn { flex: 1; padding: 10px; font-size: 14px; font-family: 'DM Sans', sans-serif; font-weight: 500; border-radius: var(--radius-sm); cursor: pointer; border: 0.5px solid var(--border2); transition: background 0.12s, transform 0.1s; }
+.btn:active { transform: scale(0.97); }
+.btn-primary { background: var(--green); color: #fff; border-color: var(--green); }
+.btn-primary:hover { background: var(--green-dark); }
+.btn-secondary { background: var(--surface); color: var(--text); }
+.btn-secondary:hover { background: var(--surface2); }
+
+.toast { position: fixed; bottom: 1.5rem; left: 50%; transform: translateX(-50%); background: var(--text); color: var(--bg); padding: 9px 18px; border-radius: 99px; font-size: 13px; font-weight: 500; z-index: 200; pointer-events: none; animation: toast-in 0.2s ease, toast-out 0.3s ease 1.6s forwards; }
+@keyframes toast-in  { from { opacity:0; transform: translateX(-50%) translateY(8px); } to { opacity:1; transform: translateX(-50%) translateY(0); } }
+@keyframes toast-out { from { opacity:1; } to { opacity:0; } }
+
+@media (max-width: 520px) {
+  .day-headers, .habit-row { grid-template-columns: 1fr repeat(7, 36px); gap: 2px; padding: 8px 10px; }
+  .cell { width: 30px; height: 30px; border-radius: 7px; }
+  .habit-actions { display: none; }
+}
+</style>
+</head>
+<body>
+
+<!-- ── SPLASH ── -->
+<div id="splash">
+  <canvas id="aurora-canvas"></canvas>
+  <div class="ground"></div>
+  <div class="splash-content">
+    <h1 class="splash-title">Pancake's<br>Habit<br>Tracker</h1>
+    <p class="splash-sub">your daily rituals</p>
+    <button class="track-btn" onclick="enterApp()">
+      <i class="ti ti-sparkles" aria-hidden="true"></i>
+      Track
+    </button>
+  </div>
+</div>
+
+<!-- ── MAIN APP ── -->
+<div id="main-app">
+  <div class="app">
+    <div class="header">
+      <div class="brand">
+        <div class="brand-icon"><i class="ti ti-checks" aria-hidden="true"></i></div>
+        <div>
+          <div class="brand-name">Pancake's Habits</div>
+          <div class="brand-date" id="today-label"></div>
+        </div>
+      </div>
+      <button class="add-btn" onclick="openModal()">
+        <i class="ti ti-plus" aria-hidden="true"></i> Add habit
+      </button>
+    </div>
+    <div class="stats-bar" id="stats-bar"></div>
+    <div class="week-nav">
+      <button class="nav-btn" onclick="changeWeek(-1)"><i class="ti ti-chevron-left"></i></button>
+      <div class="week-label" id="week-label"></div>
+      <button class="nav-btn" id="next-btn" onclick="changeWeek(1)"><i class="ti ti-chevron-right"></i></button>
+    </div>
+    <div class="tracker" id="tracker"></div>
+  </div>
+</div>
+
+<div id="modal-root"></div>
+<div id="toast-root"></div>
+
+<script>
+/* ══════════════════════════════════════════
+   AURORA ANIMATION
+══════════════════════════════════════════ */
+(function() {
+  const canvas = document.getElementById('aurora-canvas');
+  const ctx = canvas.getContext('2d');
+
+  function resize() {
+    canvas.width  = window.innerWidth;
+    canvas.height = window.innerHeight;
+  }
+  resize();
+  window.addEventListener('resize', resize);
+
+  // Each "band" is a wavy ribbon of colour
+  const bands = [
+    { y: 0.28, amp: 0.07, freq: 0.9,  speed: 0.00018, phase: 0,    color: [80, 220, 160],  alpha: 0.18, width: 0.28 },
+    { y: 0.22, amp: 0.06, freq: 1.1,  speed: 0.00014, phase: 1.2,  color: [60, 200, 240],  alpha: 0.14, width: 0.22 },
+    { y: 0.38, amp: 0.08, freq: 0.7,  speed: 0.00012, phase: 2.5,  color: [140, 100, 240], alpha: 0.13, width: 0.30 },
+    { y: 0.18, amp: 0.05, freq: 1.4,  speed: 0.00020, phase: 0.7,  color: [40, 180, 200],  alpha: 0.12, width: 0.18 },
+    { y: 0.45, amp: 0.09, freq: 0.6,  speed: 0.00010, phase: 3.8,  color: [100, 240, 180], alpha: 0.10, width: 0.25 },
+    { y: 0.32, amp: 0.06, freq: 1.2,  speed: 0.00016, phase: 5.1,  color: [180, 120, 255], alpha: 0.11, width: 0.20 },
+  ];
+
+  let t = 0;
+
+  function drawBand(band) {
+    const W = canvas.width;
+    const H = canvas.height;
+    const centerY = H * band.y;
+    const amplitude = H * band.amp;
+    const bandHeight = H * band.width;
+
+    ctx.save();
+
+    // Build the wavy path
+    const points = [];
+    const steps = 120;
+    for (let i = 0; i <= steps; i++) {
+      const x = (i / steps) * W;
+      const wave1 = Math.sin(i * band.freq * 0.05 + t * band.speed * 1000 + band.phase) * amplitude;
+      const wave2 = Math.sin(i * band.freq * 0.09 + t * band.speed * 800 + band.phase * 1.3) * amplitude * 0.4;
+      const y = centerY + wave1 + wave2;
+      points.push([x, y]);
+    }
+
+    // Draw ribbon as a filled shape with gradient
+    ctx.beginPath();
+    ctx.moveTo(points[0][0], points[0][1] - bandHeight * 0.5);
+    for (let i = 1; i < points.length; i++) {
+      ctx.lineTo(points[i][0], points[i][1] - bandHeight * 0.5);
+    }
+    for (let i = points.length - 1; i >= 0; i--) {
+      ctx.lineTo(points[i][0], points[i][1] + bandHeight * 0.5);
+    }
+    ctx.closePath();
+
+    // Vertical gradient for each band (bright centre, fade edges)
+    const midY = centerY;
+    const grad = ctx.createLinearGradient(0, midY - bandHeight, 0, midY + bandHeight);
+    const [r, g, b] = band.color;
+    grad.addColorStop(0,   `rgba(${r},${g},${b},0)`);
+    grad.addColorStop(0.3, `rgba(${r},${g},${b},${band.alpha * 0.6})`);
+    grad.addColorStop(0.5, `rgba(${r},${g},${b},${band.alpha})`);
+    grad.addColorStop(0.7, `rgba(${r},${g},${b},${band.alpha * 0.6})`);
+    grad.addColorStop(1,   `rgba(${r},${g},${b},0)`);
+
+    ctx.fillStyle = grad;
+    ctx.fill();
+    ctx.restore();
+  }
+
+  function frame(ts) {
+    t = ts;
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+    // Dark sky base
+    const skyGrad = ctx.createLinearGradient(0, 0, 0, canvas.height);
+    skyGrad.addColorStop(0,   '#020d12');
+    skyGrad.addColorStop(0.6, '#031a14');
+    skyGrad.addColorStop(1,   '#000d08');
+    ctx.fillStyle = skyGrad;
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+    // Aurora bands
+    bands.forEach(b => drawBand(b));
+
+    // Soft glow overlay at top
+    const glowGrad = ctx.createRadialGradient(
+      canvas.width * 0.5, canvas.height * 0.15,
+      0,
+      canvas.width * 0.5, canvas.height * 0.15,
+      canvas.width * 0.7
+    );
+    glowGrad.addColorStop(0,   'rgba(60,200,160,0.06)');
+    glowGrad.addColorStop(0.5, 'rgba(80,150,220,0.04)');
+    glowGrad.addColorStop(1,   'transparent');
+    ctx.fillStyle = glowGrad;
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+    if (document.getElementById('splash')) {
+      requestAnimationFrame(frame);
+    }
+  }
+
+  requestAnimationFrame(frame);
+})();
+
+/* ══════════════════════════════════════════
+   SPLASH → APP TRANSITION
+══════════════════════════════════════════ */
+function enterApp() {
+  const splash = document.getElementById('splash');
+  splash.classList.add('exit');
+  setTimeout(() => {
+    splash.remove();
+    const app = document.getElementById('main-app');
+    app.classList.add('visible');
+    render();
+  }, 750);
+}
+
+/* ══════════════════════════════════════════
+   HABIT TRACKER LOGIC
+══════════════════════════════════════════ */
+const EMOJIS = ['💪','🏃','📚','🧘','💧','🥗','😴','✍️','🎯','🎸','🌿','🧠','🚴','🏋️','🛁','☀️','🍎','🎨','🧹','🎵'];
+
+let habits = JSON.parse(localStorage.getItem('ht_habits') || '[]');
+let log    = JSON.parse(localStorage.getItem('ht_log')    || '{}');
+let weekOffset = 0;
+let editId = null;
+
+if (!habits.length) {
+  habits = [
+    { id: 'ex1', name: 'Exercise',   emoji: '💪' },
+    { id: 'ex2', name: 'Read',        emoji: '📚' },
+    { id: 'ex3', name: 'Drink water', emoji: '💧' },
+  ];
+  persist();
+}
+
+function persist() {
+  localStorage.setItem('ht_habits', JSON.stringify(habits));
+  localStorage.setItem('ht_log',    JSON.stringify(log));
+}
+
+function todayStr() { return new Date().toISOString().slice(0,10); }
+function dateKey(d) { return d.toISOString().slice(0,10); }
+
+function getWeek(offset) {
+  const now = new Date();
+  const dow = (now.getDay() + 6) % 7;
+  const mon = new Date(now);
+  mon.setDate(now.getDate() - dow + offset * 7);
+  return Array.from({length:7}, (_,i) => { const d = new Date(mon); d.setDate(mon.getDate()+i); return d; });
+}
+
+function streak(id) {
+  let n = 0;
+  for (let i = 0; i < 365; i++) {
+    const d = new Date(); d.setDate(d.getDate() - i);
+    if (log[id]?.[dateKey(d)]) n++;
+    else if (i > 0) break;
+  }
+  return n;
+}
+
+function toggle(id, key) {
+  if (!log[id]) log[id] = {};
+  log[id][key] = !log[id][key];
+  persist();
+  render();
+}
+
+function render() {
+  const days  = getWeek(weekOffset);
+  const today = todayStr();
+  const DAY   = ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
+
+  document.getElementById('today-label').textContent =
+    new Date().toLocaleDateString('en-AU', {weekday:'long', day:'numeric', month:'long'});
+
+  const fmt = d => d.toLocaleDateString('en-AU', {day:'numeric', month:'short'});
+  document.getElementById('week-label').textContent = `${fmt(days[0])} – ${fmt(days[6])}`;
+  document.getElementById('next-btn').disabled = weekOffset >= 0;
+
+  const total          = habits.length;
+  const doneTodayCount = habits.filter(h => log[h.id]?.[today]).length;
+  const allStreaks     = habits.map(h => streak(h.id));
+  const topStreak      = allStreaks.length ? Math.max(...allStreaks) : 0;
+  const totalChecks    = Object.values(log).reduce((s,d) => s + Object.values(d).filter(Boolean).length, 0);
+
+  document.getElementById('stats-bar').innerHTML = `
+    <div class="stat"><div class="stat-val">${doneTodayCount}/${total}</div><div class="stat-label">Today</div></div>
+    <div class="stat"><div class="stat-val">${topStreak}d</div><div class="stat-label">Best streak</div></div>
+    <div class="stat"><div class="stat-val">${totalChecks}</div><div class="stat-label">All time</div></div>`;
+
+  let html = `<div class="day-headers"><div></div>`;
+  days.forEach((d,i) => {
+    const isT = dateKey(d) === today;
+    html += `<div class="dh${isT?' today':''}">${DAY[i]}<span class="dnum">${d.getDate()}</span></div>`;
+  });
+  html += `</div>`;
+
+  if (!habits.length) {
+    html += `<div class="empty"><i class="ti ti-plant-2" aria-hidden="true"></i>Add your first habit above to get started.</div>`;
+  } else {
+    habits.forEach(h => {
+      const s = streak(h.id);
+      const escapedH = JSON.stringify(h).replace(/"/g, '&quot;');
+      html += `<div class="habit-row">
+        <div class="habit-meta">
+          <span class="habit-emoji">${h.emoji}</span>
+          <div class="habit-info">
+            <div class="habit-name">${h.name}</div>
+            <div class="habit-streak">${s >= 1 ? '🔥 '+s+' day'+(s>1?'s':'')+' streak' : 'No streak yet'}</div>
+          </div>
+          <div class="habit-actions">
+            <button class="icon-btn" onclick='openModal(${escapedH})' title="Edit"><i class="ti ti-pencil" aria-hidden="true"></i></button>
+            <button class="icon-btn del" onclick="deleteHabit('${h.id}')" title="Delete"><i class="ti ti-trash" aria-hidden="true"></i></button>
+          </div>
+        </div>`;
+
+      days.forEach(d => {
+        const key   = dateKey(d);
+        const done  = !!(log[h.id]?.[key]);
+        const isFut = key > today;
+        const isT   = key === today;
+        html += `<div class="cell${done?' done':''}${isFut?' future':''}${isT&&!done?' today-col':''}"
+          onclick="toggle('${h.id}','${key}')"
+          role="checkbox" aria-checked="${done}" aria-label="${h.name} ${key}">
+          ${done ? '<i class="ti ti-check" aria-hidden="true"></i>' : ''}
+        </div>`;
+      });
+      html += `</div>`;
+    });
+
+    const pct = total ? Math.round(doneTodayCount / total * 100) : 0;
+    html += `<div class="progress-wrap">
+      <div class="progress-bar"><div class="progress-fill" style="width:${pct}%"></div></div>
+      <div class="progress-label">${pct}%</div>
+    </div>`;
+  }
+
+  document.getElementById('tracker').innerHTML = html;
+}
+
+function changeWeek(dir) {
+  weekOffset = Math.min(0, weekOffset + dir);
+  render();
+}
+
+function openModal(existing) {
+  editId = existing?.id || null;
+  const selEmoji = existing?.emoji || EMOJIS[0];
+  const selName  = existing?.name  || '';
+  const emojiHTML = EMOJIS.map(e =>
+    `<div class="emoji-opt${e===selEmoji?' sel':''}" onclick="pickEmoji(this,'${e}')">${e}</div>`
+  ).join('');
+
+  document.getElementById('modal-root').innerHTML = `
+    <div class="overlay" onclick="closeModal(event)">
+      <div class="modal" onclick="event.stopPropagation()">
+        <div class="modal-title">${existing ? 'Edit habit' : 'New habit'}</div>
+        <label for="habit-input">Name</label>
+        <input type="text" id="habit-input" placeholder="e.g. Morning run" value="${selName}" maxlength="32" onkeydown="if(event.key==='Enter')saveHabit()">
+        <label>Icon</label>
+        <div class="emoji-grid">${emojiHTML}</div>
+        <input type="hidden" id="sel-emoji" value="${selEmoji}">
+        <div class="modal-actions">
+          <button class="btn btn-secondary" onclick="closeModal()">Cancel</button>
+          <button class="btn btn-primary" onclick="saveHabit()">Save</button>
+        </div>
+      </div>
+    </div>`;
+  setTimeout(() => document.getElementById('habit-input')?.focus(), 50);
+}
+
+function closeModal(e) {
+  if (!e || e.target.classList.contains('overlay'))
+    document.getElementById('modal-root').innerHTML = '';
+}
+
+function pickEmoji(el, e) {
+  document.querySelectorAll('.emoji-opt').forEach(x => x.classList.remove('sel'));
+  el.classList.add('sel');
+  document.getElementById('sel-emoji').value = e;
+}
+
+function saveHabit() {
+  const name  = document.getElementById('habit-input').value.trim();
+  const emoji = document.getElementById('sel-emoji').value;
+  if (!name) { document.getElementById('habit-input').focus(); return; }
+  if (editId) {
+    const h = habits.find(x => x.id === editId);
+    if (h) { h.name = name; h.emoji = emoji; }
+  } else {
+    habits.push({ id: 'h' + Date.now(), name, emoji });
+  }
+  persist();
+  document.getElementById('modal-root').innerHTML = '';
+  render();
+  toast(editId ? 'Habit updated' : `${emoji} ${name} added`);
+}
+
+function deleteHabit(id) {
+  const h = habits.find(x => x.id === id);
+  if (!h || !confirm(`Delete "${h.name}"?`)) return;
+  habits = habits.filter(x => x.id !== id);
+  persist();
+  render();
+  toast(`Deleted "${h.name}"`);
+}
+
+function toast(msg) {
+  const el = document.createElement('div');
+  el.className = 'toast';
+  el.textContent = msg;
+  document.getElementById('toast-root').appendChild(el);
+  setTimeout(() => el.remove(), 2000);
+}
+
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape') document.getElementById('modal-root').innerHTML = '';
+});
+</script>
+</body>
+</html>
